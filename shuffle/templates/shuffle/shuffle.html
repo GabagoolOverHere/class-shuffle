@@ -1,0 +1,193 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% tailwind_css %}
+    <script defer src="https://unpkg.com/alpinejs@3.9.1/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.7.0"
+            integrity="sha384-EzBXYPt0/T6gxNp0nuPtLkmRpmDBbjg6WmCUZRLXBBwYYmwAUxzlSGej0ARHX0Bo"
+            crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <title>Class Shuffle</title>
+</head>
+<body class="font-mono">
+<header>
+    <nav class="bg-gray-800">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+            <div class="relative flex items-center justify-between h-16">
+                <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                    <button type="button"
+                            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                            aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="lg:block h-8 w-auto" src="{% static 'images/Icon.png' %}" alt="">
+                    </div>
+                    <div class="hidden sm:block sm:ml-6">
+                        <div class="flex space-x-4">
+                            <a href="{% url 'shuffle' %}" class="bg-gray-900 text-white px-3 py-2 rounded-md text-2xl"
+                               aria-current="page">Class Shuffle</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                    <button type="button"
+                            class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <span class="sr-only">View notifications</span>
+                        <!-- Heroicon name: outline/bell -->
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="sm:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium"
+                   aria-current="page">Class Shuffle</a>
+            </div>
+        </div>
+    </nav>
+</header>
+<main
+        x-data="{
+            pickConfigShow: true, weekFullShow: false, weekGroupShow: false, uploadFullShow: false, uploadGroupShow: false, result: false,
+            mode: '',
+            days: {
+            'week':
+                [{'Monday': {count: 0, weekday: 0}},
+                {'Tuesday': {count: 0, weekday: 1}},
+                {'Wednesday': {count: 0, weekday: 2}},
+                {'Thursday': {count: 0, weekday: 3}},
+                {'Friday': {count: 0, weekday: 4}}]
+            }
+        }"
+>
+    <div class="py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="flex flex-col justify-center items-center py-3 bg-white border-4 border-dashed border-gray-200 rounded-lg h-96">
+                <div
+                        class="flex flex-col items-center"
+                        x-show="pickConfigShow"
+                >
+                    <h2 class="text-gray-500 my-5">Pick a configuration</h2>
+                    <div class="flex justify-between">
+                        <button
+                                @click="
+                                    weekFullShow = !weekFullShow;
+                                    pickConfigShow = !pickConfigShow;
+                                    mode = 'full';"
+                                class="rounded-full bg-indigo-500 px-4 py-2 text-white mx-3 hover:bg-indigo-700"
+                        >
+                            Full Class
+                        </button>
+                        <button
+                                @click="
+                                    weekGroupShow = !weekGroupShow;
+                                    pickConfigShow = !pickConfigShow;
+                                    mode='groups';"
+                                class="rounded-full bg-indigo-500 px-4 py-2 text-white mx-3 hover:bg-indigo-700"
+                        >
+                            Two Groups
+                        </button>
+                    </div>
+                </div>
+                <div
+                        x-show="weekFullShow"
+                        class="flex flex-col items-center"
+                >
+                    <h2 class="text-gray-500 my-5">Select the days when you see this class</h2>
+                    <div class="relative z-0 inline-flex items-center rounded-md shadow-sm -space-x-px"
+                         aria-label="Pagination">
+                        <template x-for="day in days['week']">
+                            <div class="flex flex-col relative">
+                                <div
+                                        @click="day[Object.keys(day)[0]].count++"
+                                        :class="day[Object.keys(day)[0]].count > 0 ? 'z-5 bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                                        class="cursor-pointer relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                                        x-text="Object.keys(day)[0]"
+                                ></div>
+                                <span x-show="day[Object.keys(day)[0]].count" x-text="day[Object.keys(day)[0]].count"
+                                      class="z-20 absolute rounded-full bg-orange-500 text-white px-1 text-xs"></span>
+                            </div>
+                        </template>
+                        <div
+                                class="px-4 cursor-pointer"
+                                @click="days['week'].forEach((day) => {day[Object.keys(day)[0]].count = 0})"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 pointer-events-none"
+                                 fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <button
+                            @click="
+                                uploadFullShow = !uploadFullShow;
+                                weekFullShow = !weekFullShow"
+                            class="rounded-full bg-orange-500 text-white px-4 py-2 my-5"
+                    >
+                        Validate
+                    </button>
+                </div>
+                <form
+                        method="POST"
+                        x-show="uploadFullShow"
+                        class="flex flex-col justify-center"
+                        enctype="multipart/form-data"
+                >
+                    {% csrf_token %}
+                    <h2 class="text-gray-500 my-5 text-center">Upload your CSV file</h2>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <input class="hidden" type="text" name="mode" id="mode" :value="mode">
+                        <input class="hidden" type="text" name="days" id="days" :value="JSON.stringify($data.days)">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
+                                 viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="file-upload"
+                                       class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                    <span>Upload a file</span>
+                                    <input
+                                            id="file-upload"
+                                            name="file-upload"
+                                            type="file"
+                                            class="sr-only"
+                                            accept="text/csv"
+                                    >
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">Only CSV file allowed</p>
+                        </div>
+                    </div>
+                    <button class="rounded-full bg-orange-500 text-white px-4 py-2 my-5" type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
