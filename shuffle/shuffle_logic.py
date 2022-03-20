@@ -6,11 +6,13 @@ from jours_feries_france import JoursFeries
 from vacances_scolaires_france import SchoolHolidayDates
 
 
-def dispatch_slots(groups: dict, count_full: int = 0, count_a: int = 0, count_b : int = 0) -> dict:
+def dispatch_slots(groups: dict, count_full: int = 0, count_a: int = 0, count_b: int = 0) -> dict:
     """
     use get_available_slots() depending of the configuration (2 groups, or full classroom)
+    :param count_full: the count of the class if full class mode
+    :param count_a: the count of the group a if groups mode
+    :param count_b: the count of the group b if groups mode
     :param groups: A and B of the BOTH for the full classroom
-    :param count: the number of students
     :return: dict[group]: [dates available according to holidays]
     """
     if len(groups) == 1 and groups.get('FULL'):
@@ -36,6 +38,7 @@ def get_available_slots(slot_list: list, count) -> list:
 
     for slot in slots:
         if sum([x[1] for x in slots]) >= count: break
+        # holidays in france won't last more than 8 consecutive weeks
         for i in range(1, 8):
             new_date = slot[0] + week * i
             if not (d.is_holiday_for_zone(new_date, 'B') or f.is_bank_holiday(new_date, zone='Métropole')):
@@ -47,38 +50,39 @@ def get_available_slots(slot_list: list, count) -> list:
 
 def get_students_list(*files, mode: str) -> dict:
     """
-    extract the students in the csv file, shuffle them, and return them in a dict
+    use shuffle_list_from_csv according to the current config
     :param file: the csv file
     :param mode: full, or groups
     :return: dict contaning a shuffled list of students
     """
     if mode == 'BOTH':
-        d = {'FULL': []}
-        for file in files:
-            students = []
-            doc = csv.reader(file, delimiter=';')
-            # islice allow slicing on iterators
-            for row in islice(doc, 1, None):
-                students.append(' '.join(x.strip('"') for x in row[0].split() if not x.isupper()))
-
-            random.shuffle(students)
-            d['FULL'].extend(students)
+        d = {'FULL': [shuffle_list_from_csv(files)]}
 
         return d
 
     elif mode == 'GROUPS':
         d = {'A': [], 'B': []}
         for file in files:
-            students = []
-            doc = csv.reader(file[1], delimiter=';')
-            # islice allow slicing on iterators
-            for row in islice(doc, 1, None):
-                students.append(' '.join(x.strip('"') for x in row[0].split() if not x.isupper()))
-
-            random.shuffle(students)
-            d[file[0]].extend(students)
+            d[file[0]] = shuffle_list_from_csv(file[1])
 
         return d
+
+
+def shuffle_list_from_csv(file) -> list:
+    """
+    extract the students in the csv file, shuffle them, and return them in a list
+    :param file: the csv file
+    :return: the shuffled list of students
+    """
+    students = []
+    doc = csv.reader(file, delimiter=';')
+    # islice allow slicing on iterators
+    for row in islice(doc, 1, None):
+        students.append(' '.join(x.strip('"') for x in row[0].split() if not x.isupper()))
+
+    random.shuffle(students)
+
+    return students
 
 
 def students_to_spots(groups: dict, slots: dict):
@@ -98,6 +102,7 @@ def students_to_spots(groups: dict, slots: dict):
     if len(slots) > 1:
         for a in slots['A']:
             for b in slots['B']:
+                # merging the dates in common between the 2 groups
                 if a[0] == b[0]:
                     a[1] += b[1]
                     a[2].extend(b[2])
@@ -107,10 +112,11 @@ def students_to_spots(groups: dict, slots: dict):
     else:
         final_res = slots['FULL']
 
+    # sorted by date
     return sorted(final_res, key=lambda r: r[0])
 
 
-def format_result(res):
+def format_result(res) -> str:
     """
     format the end result to be written in a text file
     :param res: the end result
@@ -128,7 +134,7 @@ def format_result(res):
 
 def get_slots_full(groups, file):
     """
-    handle all the functions so I have to call just this one to have a result
+    handle all the functions so I have to call just this one to have a result. for full class mode
     """
     student_dict = get_students_list(file, mode='BOTH')
     slots = dispatch_slots(groups, count_full=len(student_dict['FULL']))
@@ -137,6 +143,9 @@ def get_slots_full(groups, file):
 
 
 def get_slots_groups(*files, groups):
+    """
+    handle all the functions so I have to call just this one to have a result. for two groups mode
+    """
     student_dict = get_students_list(('A', files[0]), ('B', files[1]), mode='GROUPS')
     slots = dispatch_slots(groups, count_a=len(student_dict['A']), count_b=len(student_dict['B']))
 

@@ -11,7 +11,6 @@ def shuffle(request):
     mode = request.POST.get('mode')
 
     full = request.FILES.get('full-file-upload')
-
     a_group = request.FILES.get('a-file-upload')
     b_group = request.FILES.get('b-file-upload')
 
