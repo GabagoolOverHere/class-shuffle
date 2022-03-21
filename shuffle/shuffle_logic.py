@@ -56,7 +56,7 @@ def get_students_list(*files, mode: str) -> dict:
     :return: dict contaning a shuffled list of students
     """
     if mode == 'BOTH':
-        d = {'FULL': [shuffle_list_from_csv(files)]}
+        d = {'FULL': shuffle_list_from_csv(files[0])}
 
         return d
 
