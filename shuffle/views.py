@@ -31,13 +31,12 @@ def shuffle(request):
 
         res = format_result(
             get_slots_groups(
-                codecs.iterdecode(a_group, 'utf-8'),
-                codecs.iterdecode(b_group, 'utf-8'),
-                groups=groups
-        ))
+                codecs.iterdecode(a_group, 'utf-8'), codecs.iterdecode(b_group, 'utf-8'), groups=groups
+            )
+        )
 
         response = HttpResponse(res, content_type='application/text charset=utf-8')
-        response['Content-Disposition'] = f'attachment; filename="result.txt"'
+        response['Content-Disposition'] = 'attachment; filename="result.txt"'
 
         return response
 

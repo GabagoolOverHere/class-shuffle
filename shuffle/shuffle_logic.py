@@ -38,8 +38,8 @@ def get_available_slots(slot_list: list, count) -> list:
 
     for slot in slots:
         if sum([x[1] for x in slots]) >= count: break
-        # holidays in france won't last more than 8 consecutive weeks
-        for i in range(1, 8):
+        # holidays in france won't last more than 10 consecutive weeks
+        for i in range(1, 10):
             new_date = slot[0] + week * i
             if not (d.is_holiday_for_zone(new_date, 'B') or f.is_bank_holiday(new_date, zone='Métropole')):
                 slots.append([new_date, slot[1], []])
@@ -124,9 +124,9 @@ def format_result(res) -> str:
     """
     formatted = []
     for r in res:
-        names = [r[2][0]]
+        names = [r[2][0].strip()]
         if len(r[2]) > 1:
-            names.extend([f' and {n}' for n in r[2][1:]])
+            names.extend([f' and {n.strip()}' for n in r[2][1:]])
         formatted.append(f'{r[0].strftime("%d/%m/%Y")}: {"".join(names)}\n')
 
     return ''.join(formatted)
