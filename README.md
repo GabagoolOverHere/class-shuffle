@@ -8,4 +8,4 @@ This small app calculate the date for each student according to his group, and h
 
 Tech stack: django, alpine.js, tailwind css
 
-demo: http://gabagool.pythonanywhere.com/shuffle/
+try it out: http://gabagool.pythonanywhere.com/shuffle/
